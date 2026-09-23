@@ -1,20 +1,21 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 import mysql.connector
+import os
 from mysql.connector import Error
 from functools import wraps
 from datetime import date
 
 app = Flask(__name__)
-app.secret_key = "change-this-secret-key"
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
 
 DB_CONFIG = {
-    "host": "localhost",
-    "user": "root",
-    "password": "@Basavaraj8971/",
-    "database": "farmdirect"
+    "host": os.environ.get("DB_HOST", "localhost"),
+    "user": os.environ.get("DB_USER", "root"),
+    "password": os.environ.get("DB_PASSWORD", "@Basavaraj8971/"),
+    "database": os.environ.get("DB_NAME", "farmdirect"),
+    "port": int(os.environ.get("DB_PORT", "3306"))
 }
-
 def get_db():
     return mysql.connector.connect(**DB_CONFIG)
 
