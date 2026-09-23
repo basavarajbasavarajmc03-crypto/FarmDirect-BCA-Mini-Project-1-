@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Admin Dashboard</h2>
+<div class="row">
+<div class="col-md-3"><div class="stat">Farmers<br><b>{{ farmers }}</b></div></div>
+<div class="col-md-3"><div class="stat">Buyers<br><b>{{ buyers }}</b></div></div>
+<div class="col-md-3"><div class="stat">Crops<br><b>{{ crops }}</b></div></div>
+<div class="col-md-3"><div class="stat">Orders<br><b>{{ orders }}</b></div></div>
+</div>
+<h4 class="mt-4">Recent Price Data</h4>
+<table class="table table-bordered"><tr><th>Crop</th><th>Price</th><th>Location</th><th>Date</th></tr>
+{% for p in prices %}<tr><td>{{ p.crop_name }}</td><td>₹{{ p.market_price }}</td><td>{{ p.location }}</td><td>{{ p.price_date }}</td></tr>{% endfor %}
+</table>
+{% endblock %}

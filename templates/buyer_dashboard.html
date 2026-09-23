@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Buyer Dashboard</h2>
+<form class="row mb-4"><div class="col-md-8"><input class="form-control" name="search" value="{{ search }}" placeholder="Search crop or location"></div><div class="col-md-2"><button class="btn btn-success w-100">Search</button></div><div class="col-md-2"><a class="btn btn-outline-success w-100" href="{{ url_for('price_suggestion') }}">Price Tool</a></div></form>
+<div class="row">
+{% for c in crops %}
+<div class="col-md-4 mb-3"><div class="card h-100 shadow-sm"><div class="card-body">
+<h4>{{ c.crop_name }}</h4><p><b>₹{{ c.price }}</b> / {{ c.unit }}</p><p>{{ c.quantity }} {{ c.unit }} available</p><p>{{ c.quality }} · {{ c.location }}</p><p>Farmer: {{ c.farmer_name }}</p>
+<a class="btn btn-success" href="{{ url_for('crop_detail', crop_id=c.crop_id) }}">Buy / View</a>
+</div></div></div>
+{% else %}<p>No matching crops.</p>{% endfor %}
+</div>
+<h4 class="mt-4">My Orders</h4>
+<table class="table table-bordered"><tr><th>Crop</th><th>Farmer</th><th>Quantity</th><th>Total</th><th>Status</th></tr>
+{% for o in orders %}<tr><td>{{ o.crop_name }}</td><td>{{ o.farmer_name }}</td><td>{{ o.quantity }}</td><td>₹{{ o.total_price }}</td><td>{{ o.status }}</td></tr>{% endfor %}
+</table>
+{% endblock %}
