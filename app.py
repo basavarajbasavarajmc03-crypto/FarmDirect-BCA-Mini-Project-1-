@@ -9,12 +9,14 @@ from datetime import date
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
 
+import os
+
 DB_CONFIG = {
-    "host": os.environ.get("DB_HOST", "localhost"),
-    "user": os.environ.get("DB_USER", "root"),
-    "password": os.environ.get("DB_PASSWORD", "143142"),
-    "database": os.environ.get("DB_NAME", "farmdirect"),
-    "port": int(os.environ.get("DB_PORT", "3306"))
+    "host": os.getenv("DB_HOST"),
+    "user": os.getenv("DB_USER"),
+    "password": os.getenv("DB_PASSWORD"),
+    "database": os.getenv("DB_NAME", "farmdirect"),
+    "port": int(os.getenv("DB_PORT", "3306"))
 }
 def get_db():
     return mysql.connector.connect(**DB_CONFIG)
