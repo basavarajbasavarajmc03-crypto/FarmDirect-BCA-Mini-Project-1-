@@ -12,7 +12,7 @@ app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
 DB_CONFIG = {
     "host": os.environ.get("DB_HOST", "localhost"),
     "user": os.environ.get("DB_USER", "root"),
-    "password": os.environ.get("DB_PASSWORD", "@Basavaraj8971/"),
+    "password": os.environ.get("DB_PASSWORD", "143142"),
     "database": os.environ.get("DB_NAME", "farmdirect"),
     "port": int(os.environ.get("DB_PORT", "3306"))
 }
