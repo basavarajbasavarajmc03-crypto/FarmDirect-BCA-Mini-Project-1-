@@ -1,25 +1,32 @@
-import os
-
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
-import mysql.connector
-from mysql.connector import Error
+import os
+import psycopg2
+from psycopg2.extras import RealDictCursor
 from functools import wraps
-from datetime import datetime  
+from datetime import date
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
+app.secret_key = "change-this-secret-key"
 
-import os
 DB_CONFIG = {
-    "host": os.getenv("DB_HOST"),
-    "user": os.getenv("DB_USER"),
-    "password": os.getenv("DB_PASSWORD"),
-    "database": os.getenv("DB_NAME", "farmdirect"),
-    "port": int(os.getenv("DB_PORT", "3306"))
+    "host": os.getenv("DB_HOST", "localhost"),
+    "port": int(os.getenv("DB_PORT", "5432")),
+    "user": os.getenv("DB_USER", "postgres"),
+    "password": os.getenv("DB_PASSWORD", ""),
+    "dbname": os.getenv("DB_NAME", "farmdirect"),
 }
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
 def get_db():
-    return mysql.connector.connect(**DB_CONFIG)
+    if DATABASE_URL:
+        return psycopg2.connect(DATABASE_URL)
+    return psycopg2.connect(**DB_CONFIG)
+
+def cursor_dict(db):
+    return db.cursor(cursor_factory=RealDictCursor)
+
 
 def login_required(f):
     @wraps(f)
@@ -44,7 +51,7 @@ def role_required(role):
 @app.route("/")
 def index():
     db = get_db()
-    cur = db.cursor(dictionary=True)
+    cur = cursor_dict(db)
     cur.execute("""
         SELECT c.*, u.name AS farmer_name
         FROM crops c JOIN users u ON c.farmer_id=u.user_id
@@ -92,7 +99,7 @@ def login():
     if request.method == "POST":
         email = request.form["email"].strip()
         password = request.form["password"]
-        db = get_db(); cur = db.cursor(dictionary=True)
+        db = get_db(); cur = cursor_dict(db)
         cur.execute("SELECT * FROM users WHERE email=%s", (email,))
         user = cur.fetchone()
         cur.close(); db.close()
@@ -122,7 +129,7 @@ def dashboard():
 @login_required
 @role_required("farmer")
 def farmer_dashboard():
-    db = get_db(); cur = db.cursor(dictionary=True)
+    db = get_db(); cur = cursor_dict(db)
     cur.execute("SELECT * FROM crops WHERE farmer_id=%s ORDER BY crop_id DESC", (session["user_id"],))
     crops = cur.fetchall()
     cur.execute("""
@@ -173,7 +180,7 @@ def delete_crop(crop_id):
 @role_required("buyer")
 def buyer_dashboard():
     search = request.args.get("search", "").strip()
-    db = get_db(); cur = db.cursor(dictionary=True)
+    db = get_db(); cur = cursor_dict(db)
     if search:
         cur.execute("""
             SELECT c.*,u.name AS farmer_name,u.phone AS farmer_phone
@@ -202,7 +209,7 @@ def buyer_dashboard():
 @app.route("/crop/<int:crop_id>")
 @login_required
 def crop_detail(crop_id):
-    db = get_db(); cur = db.cursor(dictionary=True)
+    db = get_db(); cur = cursor_dict(db)
     cur.execute("""
         SELECT c.*,u.name AS farmer_name,u.phone AS farmer_phone,u.email AS farmer_email
         FROM crops c JOIN users u ON c.farmer_id=u.user_id
@@ -220,7 +227,7 @@ def crop_detail(crop_id):
 @role_required("buyer")
 def place_order(crop_id):
     quantity = float(request.form["quantity"])
-    db = get_db(); cur = db.cursor(dictionary=True)
+    db = get_db(); cur = cursor_dict(db)
     cur.execute("SELECT * FROM crops WHERE crop_id=%s AND status='Available'", (crop_id,))
     crop = cur.fetchone()
     if not crop:
@@ -251,9 +258,12 @@ def update_order(order_id, action):
         return redirect(url_for("farmer_dashboard"))
     db = get_db(); cur = db.cursor()
     cur.execute("""
-        UPDATE orders o JOIN crops c ON o.crop_id=c.crop_id
-        SET o.status=%s
-        WHERE o.order_id=%s AND c.farmer_id=%s
+        UPDATE orders o
+        SET status=%s
+        FROM crops c
+        WHERE o.crop_id=c.crop_id
+          AND o.order_id=%s
+          AND c.farmer_id=%s
     """, (new_status, order_id, session["user_id"]))
     db.commit(); cur.close(); db.close()
     flash(f"Order {new_status.lower()}.", "success")
@@ -268,7 +278,7 @@ def price_suggestion():
     if request.method == "POST":
         crop_name = request.form["crop_name"].strip()
         location = request.form["location"].strip()
-        db = get_db(); cur = db.cursor(dictionary=True)
+        db = get_db(); cur = cursor_dict(db)
         cur.execute("""
             SELECT AVG(market_price) AS avg_price, MIN(market_price) AS min_price,
                    MAX(market_price) AS max_price, COUNT(*) AS samples
@@ -293,7 +303,7 @@ def price_suggestion():
 @login_required
 @role_required("admin")
 def admin_dashboard():
-    db = get_db(); cur = db.cursor(dictionary=True)
+    db = get_db(); cur = cursor_dict(db)
     cur.execute("SELECT COUNT(*) AS n FROM users WHERE user_type='farmer'"); farmers=cur.fetchone()["n"]
     cur.execute("SELECT COUNT(*) AS n FROM users WHERE user_type='buyer'"); buyers=cur.fetchone()["n"]
     cur.execute("SELECT COUNT(*) AS n FROM crops"); crops=cur.fetchone()["n"]
@@ -305,7 +315,7 @@ def admin_dashboard():
 
 @app.errorhandler(500)
 def server_error(error):
-    return render_template("error.html", message="Server/database error. Check your MySQL settings."), 500
+    return render_template("error.html", message="Server/database error. Check your PostgreSQL settings."), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
