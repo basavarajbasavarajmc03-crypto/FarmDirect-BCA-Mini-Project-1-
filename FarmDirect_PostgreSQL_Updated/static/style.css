@@ -1,0 +1,7 @@
+body { background:#f7faf7; }
+.hero { background:linear-gradient(135deg,#e6f6e8,#fff); border:1px solid #d7ecd9; }
+.card { border:0; }
+.stat { background:white; border-radius:14px; padding:25px; text-align:center; box-shadow:0 2px 10px #00000012; font-size:18px; }
+.stat b { font-size:32px; color:#198754; }
+table { background:white; }
+footer { color:#6c757d; }

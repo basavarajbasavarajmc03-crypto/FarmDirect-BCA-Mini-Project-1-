@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card shadow-sm"><div class="card-body">
+<h2>{{ crop.crop_name }}</h2>
+<p><b>Price:</b> ₹{{ crop.price }} / {{ crop.unit }}</p>
+<p><b>Available:</b> {{ crop.quantity }} {{ crop.unit }}</p>
+<p><b>Quality:</b> {{ crop.quality }}</p>
+<p><b>Location:</b> {{ crop.location }}</p>
+<p><b>Farmer:</b> {{ crop.farmer_name }}</p>
+<p><b>Contact:</b> {{ crop.farmer_phone }}</p>
+{% if session.get('role') == 'buyer' and crop.status == 'Available' %}
+<form method="post" action="{{ url_for('place_order', crop_id=crop.crop_id) }}" class="row g-2 mt-3">
+<div class="col-md-5"><input class="form-control" type="number" step="0.01" max="{{ crop.quantity }}" name="quantity" placeholder="Quantity ({{ crop.unit }})" required></div>
+<div class="col-md-3"><button class="btn btn-success">Send Purchase Request</button></div>
+</form>
+{% endif %}
+</div></div>
+{% endblock %}

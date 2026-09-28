@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-md-7">
+<h2>Crop Price Suggestion</h2>
+<form method="post" class="card p-4 shadow-sm mb-4">
+<input class="form-control mb-3" name="crop_name" value="{{ crop_name }}" placeholder="Example: Tomato" required>
+<input class="form-control mb-3" name="location" value="{{ location }}" placeholder="Location (optional)">
+<button class="btn btn-success">Calculate Suggested Price</button>
+</form>
+{% if result %}
+<div class="card border-success shadow-sm"><div class="card-body">
+<h4>{{ crop_name }}</h4>
+<p>Based on {{ result.samples }} stored market observations.</p>
+<h5>Average: ₹{{ result.average }}</h5>
+<p class="fs-5">Suggested range: <b>₹{{ result.suggested_min }} - ₹{{ result.suggested_max }}</b></p>
+<small class="text-muted">This is a simple educational estimate based on stored sample data, not a guaranteed market price.</small>
+</div></div>
+{% endif %}
+</div></div>
+{% endblock %}

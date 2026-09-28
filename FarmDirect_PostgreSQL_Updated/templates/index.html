@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="hero p-5 rounded-4 mb-4">
+<h1>Direct from Farmers to Buyers</h1>
+<p class="lead">Sell crops directly, discover buyers, and use market data to estimate a fair price.</p>
+<a href="{{ url_for('register') }}" class="btn btn-success btn-lg">Get Started</a>
+</div>
+<h3>Recently Listed Crops</h3>
+<div class="row">
+{% for c in crops %}
+<div class="col-md-3 mb-3">
+<div class="card h-100 shadow-sm">
+<div class="card-body">
+<h5>{{ c.crop_name }}</h5>
+<p>₹{{ "%.2f"|format(c.price) }} / {{ c.unit }}</p>
+<p>Quantity: {{ c.quantity }} {{ c.unit }}</p>
+<p>Location: {{ c.location }}</p>
+<p class="text-muted">Farmer: {{ c.farmer_name }}</p>
+<a href="{{ url_for('crop_detail', crop_id=c.crop_id) }}" class="btn btn-outline-success">View</a>
+</div></div></div>
+{% else %}
+<p>No crops listed yet.</p>
+{% endfor %}
+</div>
+{% endblock %}
